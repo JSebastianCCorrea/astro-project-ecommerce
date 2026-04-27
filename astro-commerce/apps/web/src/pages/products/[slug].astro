@@ -1,0 +1,18 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getProductBySlug } from "../../services/products";
+
+const { slug } = Astro.params;
+const product = await getProductBySlug(slug as string).catch(() => null);
+---
+
+
+<MainLayout title={product ? `${product.name} | AstroCommerce` : "Producto no encontrado"}>
+
+
+--section
+    --container
+        --product 
+        --card( agregar, notificar que no existe el producto, agregar al carrito, comprar el producto, producto no encontrado)
+
+</MainLayout>

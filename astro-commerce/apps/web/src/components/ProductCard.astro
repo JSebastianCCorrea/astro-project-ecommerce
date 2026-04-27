@@ -1,0 +1,26 @@
+---
+import type { Product } from"../types";
+
+interface Props {
+    product: Product;
+}
+
+const { Product } = Astro.Props;'
+---
+
+<article class ="card product-card">
+    <div class="product-card__image">
+        <img src={product.imageUrl} alt={product.name} />
+    </div>
+
+    <div>
+        <span class="bagde">{product.category}</span>
+        <h3>{product.name}</h3>
+        <p>{product.description}<p>
+    </div>
+
+    <div class="product-card__meta">
+        <strong class="price">{product.price.toFixed(2)}</strong>
+        <a class="btn btn-primary" href={`/products/${product.slug}`}>Ver detalle Producto</a>
+    </div>
+</article>

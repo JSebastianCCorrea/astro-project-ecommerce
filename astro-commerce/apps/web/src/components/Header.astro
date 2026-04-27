@@ -1,0 +1,27 @@
+---
+const isAuthenticated = false;
+const role ="guest";
+---
+
+<header class ='site-header'>
+    <div class="container site-header__inner">
+        <a href="/" class="logo">AstroCommerce</a>
+
+        <nav class="nav" aria-label="Principal">
+            <a href = "/">Inicio<a/>
+            <a href = "/products">Productos<a/>
+            <a href = "/auth/Login">Login<a/>
+            <a href = "/auth/register">Registro<a/>
+            <a href = "/account">Mi Cuenta<a/>
+            {role ==="admin" && <a href ="/admin">Admin</a>}
+        </nav>
+
+        <div>
+            {isAuthenticated ? (
+                <a class ="btn btn-outline" href="/account">Panel</a>
+                ) : (
+                <a class ="btn btn-primary" href="/auth/login">Ingresar</a>
+                )}
+            </div>
+        </div>
+</header>
