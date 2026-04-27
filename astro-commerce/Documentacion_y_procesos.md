@@ -88,3 +88,122 @@ Pruebas funcionales minimas:
 - Los servicios deben seguir usando `apiFetch` para mantener el mismo manejo de errores.
 - Los tipos en `src/types/index.ts` son la fuente unica de verdad para respuestas del API.
 - Cualquier nueva pagina debe componer `Layout.astro` para mantener el HTML base.
+
+## Estado actual del repositorio (vision general)
+
+- El repositorio es un monorepo simple con carpeta raiz `astro-commerce`.
+- En la raiz existe `package.json` con scripts para orquestar la app web y una app API futura o paralela.
+- La aplicacion actual vive en `astro-commerce/apps/web` y es un proyecto Astro SSR con adaptador Node.
+- `public/` contiene assets estaticos (favicons) y `src/assets/` contiene SVGs usados por el componente `Welcome.astro`.
+- `src/` concentra layouts, componentes, paginas, estilos globales y servicios para consumo de API.
+
+## Detalle de codigo por archivo (estado actual)
+
+### `astro-commerce/package.json`
+- Define scripts de orquestacion (`dev:web`, `build:web`) apuntando a `apps/web`.
+- Sirve como punto de entrada para ejecutar comandos sin salir de la raiz.
+
+### `astro-commerce/apps/web/package.json`
+- Declara el runtime Astro, el adaptador Node y scripts `dev`, `build`, `preview`.
+- Fija la version minima de Node en `>=22.12.0` para evitar inconsistencias de runtime.
+
+### `astro-commerce/apps/web/astro.config.mjs`
+- Configura la salida `server` (SSR) y el adaptador Node en modo `standalone`.
+- Centraliza la estrategia de despliegue para el frontend.
+
+### `astro-commerce/apps/web/src/pages/index.astro`
+- Punto de entrada de la ruta `/`.
+- Compone `Layout.astro` y el componente `Welcome.astro`.
+- Se mantiene minimal para permitir sustitucion rapida por la pagina real.
+
+### `astro-commerce/apps/web/src/layouts/Layout.astro`
+- Define HTML base, meta tags y el `slot` principal.
+- Es el contenedor comun para todas las paginas.
+
+### `astro-commerce/apps/web/src/components/Welcome.astro`
+- UI inicial de Astro con assets `astro.svg` y `background.svg`.
+- Incluye estilos locales encapsulados para la pagina de bienvenida.
+
+### `astro-commerce/apps/web/src/lib/config.ts`
+- Fuente unica de configuracion de `API_URL`.
+- Usa `PUBLIC_API_URL` cuando existe; fallback a `http://localhost:4000/api`.
+
+### `astro-commerce/apps/web/src/lib/fetcher.ts`
+- Wrapper de red `apiFetch` con headers JSON y auth opcional.
+- Consolida manejo de errores HTTP y parseo JSON.
+- Permite tipado generico con `apiFetch<T>()`.
+
+### `astro-commerce/apps/web/src/services/auth.ts`
+- `loginUser(email, password)` consume `/auth/login`.
+- `registerUser(name, email, password)` consume `/auth/register`.
+- Ambas funciones usan `apiFetch` para consistencia de headers y errores.
+
+### `astro-commerce/apps/web/src/services/products.ts`
+- `getProducts()` obtiene lista de productos.
+- `getProduct(id)` obtiene detalle de un producto.
+- `createProduct(product)` crea un producto via POST.
+- Todas las funciones quedan tipadas por `product` desde `src/types`.
+
+### `astro-commerce/apps/web/src/types/index.ts`
+- Define los contratos de datos `user`, `product`, `authResponse`.
+- Centraliza el tipado para servicios y posibles componentes.
+
+### `astro-commerce/apps/web/src/styles/global.css`
+- Tokens globales de color, tipografia y espaciados.
+- Utilidades base (`.container`, `.grid`, `.btn`, `.card`, `.hero`, `.nav`).
+- Estilos estructurales para secciones, tarjetas, header y dashboard.
+
+### `astro-commerce/apps/web/src/env.d.ts`
+- Declara tipos de Astro para permitir `import.meta.env` y tipado global.
+
+### `astro-commerce/apps/web/tsconfig.json`
+- Extiende la configuracion estricta de Astro.
+- Incluye tipados generados y excluye `dist`.
+
+### `astro-commerce/apps/web/.gitignore`
+- Ignora `dist`, `.astro`, `node_modules` y archivos `.env`.
+- Evita artefactos de build y datos sensibles en el repositorio.
+
+### `astro-commerce/apps/web/.vscode/extensions.json`
+- Recomienda la extension oficial `astro-build.astro-vscode`.
+
+### `astro-commerce/apps/web/.vscode/launch.json`
+- Configura lanzamiento del servidor de desarrollo desde VS Code.
+
+### `astro-commerce/apps/web/README.md`
+- Plantilla base del starter de Astro con comandos y estructura.
+
+## Flujograma de construccion del repositorio
+
+```mermaid
+flowchart TD
+    A[Raiz: astro-commerce] --> B[package.json scripts]
+    B --> C[apps/web]
+    C --> D[astro.config.mjs]
+    D --> E[Astro SSR Node adapter]
+    C --> F[src/pages/index.astro]
+    F --> G[src/layouts/Layout.astro]
+    F --> H[src/components/Welcome.astro]
+    C --> I[src/services]
+    I --> J[src/lib/fetcher.ts]
+    J --> K[src/lib/config.ts -> API_URL]
+    I --> L[src/types/index.ts]
+    C --> M[src/styles/global.css]
+    C --> N[public y assets]
+```
+
+## Flujo de datos y responsabilidades (codigo actual)
+
+1. La pagina `/` renderiza `index.astro`, que compone `Layout.astro` y `Welcome.astro`.
+2. Cuando una pagina o componente necesita datos, llama a un servicio en `src/services`.
+3. Los servicios delegan en `apiFetch` para construir la URL y definir headers.
+4. `apiFetch` usa `API_URL` desde `config.ts` y retorna JSON tipado.
+5. Los contratos de datos viven en `src/types/index.ts` y se reutilizan en servicios y UI.
+
+## Cambios y decisiones actuales (estado del codigo)
+
+- Se adopto Astro SSR con adaptador Node `standalone` para permitir deploy server-side.
+- Se centralizo la configuracion del API en `config.ts` para evitar hardcode en servicios.
+- Se agrego un wrapper `apiFetch` para unificar errores y headers JSON.
+- Se definieron tipos de dominio base (`user`, `product`, `authResponse`) para consistencia.
+- Se establecio un sistema de estilos global para base visual comun.
